@@ -1,0 +1,5 @@
+{
+  "name": "Occupancy & Profit Dashboard",
+  "description": "A financial decision-making tool for property management featuring occupancy tracking, revenue forecasting, and break-even analysis.",
+  "requestFramePermissions": []
+}
