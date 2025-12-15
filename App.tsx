@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { 
@@ -13,7 +14,7 @@ import {
   ExpenseCategory
 } from './types';
 import { 
-  calculateFinancials, // Updated function
+  calculateFinancials, 
   parseCSV, 
   extractUnitsFromBookings, 
   INITIAL_REAL_DATA,
@@ -39,7 +40,7 @@ const App = () => {
   const [isAddOnModalOpen, setIsAddOnModalOpen] = useState(false);
   const [selectedBookingForAddons, setSelectedBookingForAddons] = useState<string | null>(null);
   const [newAddOn, setNewAddOn] = useState<{ category: AddOnCategory, name: string, amount: string, status: AddOnState }>({
-      category: AddOnCategory.Tours,
+      category: AddOnCategory.IslandHopping,
       name: '',
       amount: '',
       status: AddOnState.Forecasted
@@ -147,7 +148,7 @@ const App = () => {
   const openAddOnModal = (bookingId: string) => {
       setSelectedBookingForAddons(bookingId);
       setIsAddOnModalOpen(true);
-      setNewAddOn({ category: AddOnCategory.Tours, name: '', amount: '', status: AddOnState.Forecasted });
+      setNewAddOn({ category: AddOnCategory.IslandHopping, name: '', amount: '', status: AddOnState.Forecasted });
   };
 
   const handleSaveAddOn = () => {
@@ -430,50 +431,71 @@ const App = () => {
         </div>
       </div>
 
-      {/* 4. Revenue Summary Cards - NEW KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-        <StatCard 
-            title="Base Revenue" 
-            value={`₱${financials.baseRevenue.toLocaleString()}`} 
-            subtext="Booked Rooms"
-            colorClass="text-slate-200" 
-            tooltip="Total booked room revenue (Sirvoy/Manual). Excludes all add-ons."
-        />
-        <StatCard 
-            title="Expected" 
-            value={`₱${financials.expectedRevenue.toLocaleString()}`} 
-            subtext="Rooms + Pre-Sold"
-            colorClass="text-blue-400" 
-            tooltip="Base Revenue + Pre-sold Profit Add-ons. (Excludes Transportation)."
-        />
-        <StatCard 
-            title="Cash Received" 
-            value={`₱${financials.cashReceived.toLocaleString()}`} 
-            subtext="Paid + Actuals"
-            colorClass="text-emerald-400" 
-            tooltip="Realized Room Payment + Paid Profit Add-ons. (Excludes Transportation)."
-        />
-        <StatCard 
-            title="Total Potential" 
-            value={`₱${financials.potentialRevenue.toLocaleString()}`} 
-            subtext="Max Revenue"
-            colorClass="text-slate-400" 
-            tooltip="Sum of all Bookings, Pre-sold, and Forecasted Add-ons."
-        />
-        <StatCard 
-            title="Total Expenses" 
-            value={`₱${financials.totalExpenses.toLocaleString()}`} 
-            subtext="Fixed + Variable"
-            colorClass="text-rose-400" 
-            tooltip="Fixed Monthly Expenses + Variable COGS (Labor/Fuel)."
-        />
-        <StatCard 
-            title="Net Cash Pos." 
-            value={`₱${financials.netCashPosition.toLocaleString()}`} 
-            subtext="Cash - Expenses"
-            colorClass={financials.netCashPosition >= 0 ? "text-emerald-400" : "text-rose-400"} 
-            tooltip="Cash Received minus Total Expenses (including Variable)."
-        />
+      {/* 4. Revenue Summary Cards - GROUPED LAYOUT */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        
+        {/* GROUP 1: CASH */}
+        <div className="bg-slate-800/50 rounded-lg p-2 border border-slate-700/50 flex flex-col gap-2">
+            <div className="text-[10px] uppercase font-bold text-emerald-500/80 px-2 tracking-widest">Cash Position</div>
+            <div className="grid grid-cols-2 gap-2 flex-1">
+                <StatCard 
+                    title="Realized Revenue" 
+                    value={`₱${financials.cashReceived.toLocaleString()}`} 
+                    subtext="Actual Cash In"
+                    colorClass="text-emerald-400" 
+                    tooltip="Actual cash received. Includes paid room charges and actual add-ons only."
+                />
+                <StatCard 
+                    title="Net Profit" 
+                    value={`₱${financials.netCashPosition.toLocaleString()}`} 
+                    subtext="Realized - Exp"
+                    colorClass={financials.netCashPosition >= 0 ? "text-emerald-400" : "text-rose-400"} 
+                    tooltip="Realized cash minus total expenses. Forecasted revenue is excluded."
+                />
+            </div>
+        </div>
+
+        {/* GROUP 2: EXPECTED */}
+        <div className="bg-slate-800/50 rounded-lg p-2 border border-slate-700/50 flex flex-col gap-2">
+            <div className="text-[10px] uppercase font-bold text-blue-500/80 px-2 tracking-widest">Expected</div>
+            <div className="grid grid-cols-2 gap-2 flex-1">
+                <StatCard 
+                    title="Base Room Revenue" 
+                    value={`₱${financials.baseRevenue.toLocaleString()}`} 
+                    subtext="Unpaid Included"
+                    colorClass="text-slate-200" 
+                    tooltip="Room revenue expected from confirmed reservations, regardless of payment status."
+                />
+                <StatCard 
+                    title="Forecasted Add-ons" 
+                    value={`₱${financials.addonExpected.toLocaleString()}`} 
+                    subtext="Pre-sold Only"
+                    colorClass="text-blue-400" 
+                    tooltip="Add-ons marked as 'Pre-Sold'. Does not include 'Forecasted' placeholders."
+                />
+            </div>
+        </div>
+
+        {/* GROUP 3: POTENTIAL */}
+        <div className="bg-slate-800/50 rounded-lg p-2 border border-slate-700/50 flex flex-col gap-2">
+            <div className="text-[10px] uppercase font-bold text-slate-500/80 px-2 tracking-widest">Potential</div>
+            <div className="grid grid-cols-2 gap-2 flex-1">
+                <StatCard 
+                    title="Total Revenue" 
+                    value={`₱${financials.potentialRevenue.toLocaleString()}`} 
+                    subtext="Max Possible"
+                    colorClass="text-slate-400" 
+                    tooltip="Maximum possible revenue including room charges and all add-ons."
+                />
+                 <StatCard 
+                    title="Total Expenses" 
+                    value={`₱${financials.totalExpenses.toLocaleString()}`} 
+                    subtext="Fixed + Variable"
+                    colorClass="text-rose-400" 
+                    tooltip="Fixed Monthly Expenses + Variable COGS (Labor/Fuel)."
+                />
+            </div>
+        </div>
       </div>
 
       {/* 5. Break-even & Occupancy Table */}
@@ -607,7 +629,7 @@ const App = () => {
                         checked={newExpense.isRecurring}
                         onChange={e => setNewExpense({...newExpense, isRecurring: e.target.checked})}
                     />
-                    <span className="text-xs text-slate-300 select-none">Recurring?</span>
+                    <span className="text-xs text-slate-300 select-none leading-tight">Apply to all future months</span>
                 </label>
 
                 <div className="flex gap-2">

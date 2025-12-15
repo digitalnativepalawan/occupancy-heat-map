@@ -58,12 +58,11 @@ export const calculateFinancials = (bookings: BookingRecord[], monthStr: string,
   let baseRevenue = 0; // Booked Room Amount
   let paidBase = 0;    // Paid Room Amount
   
-  let addonExpected = 0; // Forecasted + PreSold (Profit Only)
+  let addonExpected = 0; // PreSold (Profit Only)
+  let addonForecasted = 0; // Forecasted (Profit Only)
   let addonCash = 0;     // Actual (Profit Only)
   
   let variableCosts = 0; // Derived from Island Hopping Actuals
-
-  let totalPotentialRevenue = 0; // Base + All Profit Addons
 
   bookings.forEach(b => {
     const bDate = new Date(b.check_in);
@@ -75,10 +74,11 @@ export const calculateFinancials = (bookings: BookingRecord[], monthStr: string,
       // Add-on Metrics
       b.add_ons.forEach(addon => {
           if (isProfitGenerating(addon.category)) {
-              totalPotentialRevenue += addon.amount;
-              
-              if (addon.status === AddOnState.Forecasted || addon.status === AddOnState.PreSold) {
+              if (addon.status === AddOnState.PreSold) {
                   addonExpected += addon.amount;
+              }
+              if (addon.status === AddOnState.Forecasted) {
+                  addonForecasted += addon.amount;
               }
               if (addon.status === AddOnState.Actual) {
                   addonCash += addon.amount;
@@ -94,44 +94,24 @@ export const calculateFinancials = (bookings: BookingRecord[], monthStr: string,
   });
 
   const cashReceived = paidBase + addonCash;
-  const expectedRevenue = baseRevenue + addonExpected; // Note: This definition might overlap with "Projected". 
-  // Refined: Expected = Base (Booked) + PreSold Addons (Committed). Forecasted is separate.
-  // Prompt says: Expected Revenue = Booked accommodation + pre-sold add-ons.
-  // Let's recalculate addonExpected to ONLY be PreSold for "Expected Revenue" metric if strictly following prompt.
-  // However, "Potential" usually implies everything. Let's do distinct sums.
-  
-  // Reset for strict calculation
-  let strictPreSold = 0;
-  let strictForecasted = 0;
-
-  bookings.forEach(b => {
-      const bDate = new Date(b.check_in);
-      if (bDate.getFullYear() === year && (bDate.getMonth() + 1) === month) {
-          b.add_ons.forEach(addon => {
-              if (isProfitGenerating(addon.category)) {
-                  if (addon.status === AddOnState.PreSold) strictPreSold += addon.amount;
-                  if (addon.status === AddOnState.Forecasted) strictForecasted += addon.amount;
-              }
-          });
-      }
-  });
-
-  const expectedRevStrict = baseRevenue + strictPreSold;
-  const potentialRevStrict = baseRevenue + strictPreSold + strictForecasted + addonCash; // All potential
+  const expectedRevenue = baseRevenue + addonExpected; // Base + PreSold
+  const potentialRevenue = baseRevenue + addonExpected + addonForecasted + addonCash; // Base + All Addons (PreSold, Forecasted, Actual)
   
   const totalExpenses = fixedExpenses + variableCosts;
   const netCashPosition = cashReceived - totalExpenses;
 
   return {
     baseRevenue,
+    paidBase,
+    addonExpected,    // Pre-sold
+    addonForecasted,  // Forecasted
+    addonCash,        // Actual
     cashReceived,
-    expectedRevenue: expectedRevStrict,
-    potentialRevenue: potentialRevStrict,
+    expectedRevenue,
+    potentialRevenue,
     variableCosts,
     totalExpenses,
-    netCashPosition,
-    // Legacy mapping for old cards if needed, but we will update UI
-    realizedRevenue: cashReceived
+    netCashPosition
   };
 };
 

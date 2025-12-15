@@ -15,9 +15,11 @@ export enum AddOnState {
 }
 
 export enum AddOnCategory {
-  Tours = 'Tours',
   IslandHopping = 'Island Hopping',
   FoodBeverage = 'Food & Beverage',
+  Labor = 'Labor', // Revenue from labor charges
+  Fuel = 'Fuel',   // Revenue from fuel charges (if any)
+  ProfessionalServices = 'Professional Services',
   Transportation = 'Transportation', // Pass-through
   Other = 'Other'
 }
@@ -27,9 +29,10 @@ export enum ExpenseCategory {
   Fuel = 'Fuel',
   FoodBeverage = 'Food & Beverage',
   ProfessionalServices = 'Professional Services',
-  CleaningSupplies = 'Cleaning & Supplies',
+  CleaningSupplies = 'Cleaning Supplies',
   RepairsMaintenance = 'Repairs & Maintenance',
-  UtilitiesTelecom = 'Utilities / Telecom',
+  Telecom = 'Telecom',
+  Utilities = 'Utilities',
   Other = 'Other'
 }
 

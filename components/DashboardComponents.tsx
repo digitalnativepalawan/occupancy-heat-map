@@ -40,8 +40,8 @@ export const InfoTooltip = ({ text }: { text: string }) => (
   </div>
 );
 
-export const StatCard = ({ title, value, subtext, colorClass, tooltip }: { title: string, value: string, subtext: string, colorClass: string, tooltip?: string }) => (
-  <Card className="flex flex-col gap-1 min-w-[130px] flex-1">
+export const StatCard = ({ title, value, subtext, colorClass, tooltip, className = '' }: { title: string, value: string, subtext: string, colorClass: string, tooltip?: string, className?: string }) => (
+  <Card className={`flex flex-col gap-1 min-w-[130px] flex-1 ${className}`}>
     <div className="flex items-center">
         <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{title}</span>
         {tooltip && <InfoTooltip text={tooltip} />}
@@ -54,23 +54,23 @@ export const StatCard = ({ title, value, subtext, colorClass, tooltip }: { title
 // --- Documentation Block ---
 export const FinancialDocumentation = () => (
     <div className="mt-8 bg-slate-800/50 p-6 rounded-lg border border-slate-700">
-        <h3 className="text-slate-200 font-bold mb-4 text-sm uppercase tracking-wider">Accounting Definitions</h3>
+        <h3 className="text-slate-200 font-bold mb-4 text-sm uppercase tracking-wider">Accounting Definitions (Locked)</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm text-slate-400">
             <div>
-                <span className="block text-emerald-400 font-medium mb-1">Cash Received</span>
-                Paid Room Revenue + Paid Profit-Generating Add-ons. Excludes Transportation.
+                <span className="block text-emerald-400 font-medium mb-1">Cash (Realized)</span>
+                Actual cash received. Includes paid room charges and actual add-ons only.
             </div>
             <div>
-                <span className="block text-blue-400 font-medium mb-1">Expected Revenue</span>
-                Booked Rooms + Pre-sold Add-ons. Used for forecasting.
+                <span className="block text-blue-400 font-medium mb-1">Expected</span>
+                Room revenue expected from confirmed reservations, regardless of payment status.
             </div>
              <div>
-                <span className="block text-indigo-400 font-medium mb-1">Pass-Through</span>
-                Transportation revenue is collected but passed to providers. Excluded from Profit.
+                <span className="block text-slate-300 font-medium mb-1">Potential</span>
+                Maximum possible revenue including room charges and all add-ons.
             </div>
             <div>
-                <span className="block text-orange-400 font-medium mb-1">Cost of Goods (COGS)</span>
-                Island Hopping includes implicit Labor (₱600) and Fuel (₱2,000) costs per actual trip.
+                <span className="block text-rose-400 font-medium mb-1">Net Profit</span>
+                Realized cash minus total expenses. Forecasted revenue is excluded.
             </div>
         </div>
     </div>
@@ -100,9 +100,9 @@ export const DailyOccupancyGrid = ({ units, bookings, monthStr }: DailyOccupancy
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-x-auto">
             {units.map(u => (
-                <div key={u.id}>
+                <div key={u.id} className="min-w-[300px]">
                     <div className="flex justify-between items-center mb-2">
                         <span className="text-sm font-bold text-slate-200">{u.name}</span>
                         <span className="text-xs text-slate-500">
@@ -157,6 +157,19 @@ export const BreakEvenTable = ({ bookings, units, monthStr, occupancyGoal, total
   // Property Level Break Even Status
   const isBreakEvenMet = netCashPosition >= 0;
   
+  // Calculate Global Occupancy for Status
+  const totalOccupancy = units.length > 0 
+      ? units.reduce((acc, u) => acc + calculateOccupancy(u.name, monthStr, bookings), 0) / units.length
+      : 0;
+
+  const getStatus = () => {
+      if (!isBreakEvenMet) return { label: 'Under Break-even', color: 'red' as const };
+      if (totalOccupancy >= occupancyGoal) return { label: 'Break-even Met + Occupancy Goal', color: 'green' as const };
+      return { label: 'Break-even Met (Cash)', color: 'blue' as const };
+  };
+
+  const status = getStatus();
+  
   // Unit Stats (Contribution View)
   const unitStats = units.map(unit => {
       const unitBookings = bookings.filter(b => b.unit === unit.name);
@@ -181,8 +194,8 @@ export const BreakEvenTable = ({ bookings, units, monthStr, occupancyGoal, total
             </div>
             <div className="text-center md:text-right">
                 <span className="block text-slate-400 text-xs font-bold uppercase mb-1">Status</span>
-                <Badge color={isBreakEvenMet ? 'green' : 'red'}>
-                    {isBreakEvenMet ? 'Break-even Met (Cash)' : 'Below Break-even (Cash)'}
+                <Badge color={status.color}>
+                    {status.label}
                 </Badge>
             </div>
         </div>
@@ -225,7 +238,7 @@ export const BreakEvenTable = ({ bookings, units, monthStr, occupancyGoal, total
                         <div className="flex justify-between md:block text-center mb-1 md:mb-0 items-center">
                             <span className="md:hidden text-slate-500 text-xs">Status</span>
                              <span className={`text-xs ${stat.occ >= occupancyGoal ? 'text-emerald-400' : 'text-slate-500'}`}>
-                                {stat.occ >= occupancyGoal ? 'Occupancy Goal Met' : 'Low Occupancy'}
+                                {stat.occ >= occupancyGoal ? 'Optimized' : 'Below Goal'}
                             </span>
                         </div>
                     </div>
