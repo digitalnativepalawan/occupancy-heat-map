@@ -23,6 +23,34 @@ import {
 import { AddBookingForm } from './components/AddBookingForm';
 import { StatCard, Card, DailyOccupancyGrid, BreakEvenTable, Badge, InfoTooltip, FinancialDocumentation } from './components/DashboardComponents';
 
+// --- Header Components ---
+
+const GithubIcon = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+  </svg>
+);
+
+const ManilaClock = () => {
+  const [date, setDate] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setDate(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const timeStr = date.toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const dateStr = date.toLocaleDateString('en-US', { timeZone: 'Asia/Manila', weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+
+  return (
+    <div className="flex flex-col items-center justify-center bg-slate-800/50 px-6 py-2 rounded-lg border border-slate-700/50 backdrop-blur-sm shadow-inner min-w-[200px]">
+        <div className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest mb-0.5">Manila Time (PHT)</div>
+        <div className="font-mono text-xl text-white font-bold leading-none tracking-tight">{timeStr}</div>
+        <div className="text-[10px] text-slate-400 font-medium mt-1">{dateStr}</div>
+    </div>
+  );
+};
+
 const App = () => {
   // --- Data State ---
   const [bookings, setBookings] = useState<BookingRecord[]>([]);
@@ -379,14 +407,22 @@ const App = () => {
           </div>
       )}
 
-      <header className="mb-6 border-b border-slate-800 pb-4 flex justify-between items-end">
-        <div>
-            <h1 className="text-2xl font-bold text-white">Palawan Collective</h1>
+      <header className="mb-6 border-b border-slate-800 pb-4 flex flex-col md:flex-row justify-between items-center gap-4 md:items-end">
+        <div className="text-center md:text-left">
+            <h1 className="text-2xl font-bold text-white tracking-tight">Palawan Collective</h1>
             <p className="text-slate-400 text-sm">Occupancy & Revenue Dashboard</p>
         </div>
-        <div className="text-right">
-             <span className="block text-xs text-slate-500">Total Bookings</span>
-             <span className="font-mono font-bold text-emerald-400">{bookings.length}</span>
+        
+        <ManilaClock />
+
+        <div className="flex items-center gap-6">
+             <a href="https://github.com/palawancollective" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-white transition-colors p-2 hover:bg-slate-800 rounded-full">
+                <GithubIcon />
+             </a>
+             <div className="text-right">
+                 <span className="block text-xs text-slate-500 uppercase tracking-wider">Total Bookings</span>
+                 <span className="font-mono text-xl font-bold text-emerald-400">{bookings.length}</span>
+            </div>
         </div>
       </header>
 
