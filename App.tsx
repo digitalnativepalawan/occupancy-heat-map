@@ -572,7 +572,7 @@ const App = () => {
               </div>
           </div>
           
-          <div className="max-h-[600px] overflow-y-auto bg-slate-900/30">
+          <div className="bg-slate-900/30">
              <div className="hidden md:grid grid-cols-8 gap-2 p-3 bg-slate-900/50 text-[10px] uppercase font-bold text-slate-400 sticky top-0 z-10 backdrop-blur-sm border-b border-slate-700">
                 <div className="col-span-2">Guest</div>
                 <div>Unit/Ref</div>
@@ -677,29 +677,43 @@ const App = () => {
           <div className="space-y-2 mb-4">
               {/* FIXED EXPENSES */}
               {[...baseExpenses.filter(e => e.active), ...monthlyExpenses.filter(e => e.month === currentMonth)].map(e => (
-                  <div key={e.id} className="flex justify-between text-sm p-2 bg-slate-900 rounded border border-slate-800">
-                      <div>
-                          <span className="text-slate-300 font-medium">{e.name}</span>
-                          <span className="ml-2 text-[10px] text-slate-500 bg-slate-800 px-1.5 rounded">{e.category}</span>
-                          {e.isRecurring && <span className="ml-1 text-[10px] text-indigo-400">(Recurring)</span>}
+                  <div key={e.id} className="group flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-800 hover:border-slate-700 transition-colors">
+                      <div className="flex flex-col gap-1 overflow-hidden pr-2">
+                          <span className="text-slate-200 font-medium truncate">{e.name}</span>
+                          <div className="flex items-center gap-2 flex-wrap">
+                               <span className="text-[10px] uppercase font-bold text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded tracking-wide border border-slate-700/50">{e.category}</span>
+                               {e.isRecurring && (
+                                  <span className="flex items-center gap-1 text-[10px] text-indigo-400 bg-indigo-900/20 px-1.5 py-0.5 rounded border border-indigo-900/30">
+                                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                     Recurring
+                                  </span>
+                               )}
+                          </div>
                       </div>
-                      <div className="flex gap-3">
-                          <span className="text-rose-400 font-mono">-₱{e.amount.toLocaleString()}</span>
-                          <button onClick={() => handleDeleteExpense(e.id, e.isRecurring)} className="text-slate-600 hover:text-rose-500">×</button>
+                      <div className="flex items-center gap-3 shrink-0">
+                          <span className="text-rose-400 font-mono font-bold text-sm whitespace-nowrap">-₱{e.amount.toLocaleString()}</span>
+                          <button 
+                              onClick={() => handleDeleteExpense(e.id, e.isRecurring)} 
+                              className="w-8 h-8 flex items-center justify-center rounded-full text-slate-500 hover:bg-rose-900/20 hover:text-rose-400 transition-colors"
+                          >
+                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                          </button>
                       </div>
                   </div>
               ))}
               
               {/* DYNAMIC VARIABLE COSTS (Island Hopping COGS) */}
               {financials.variableCosts > 0 && (
-                   <div className="flex justify-between text-sm p-2 bg-slate-900/50 rounded border border-orange-900/30">
-                      <div>
-                          <span className="text-orange-300 font-medium">Variable Costs (COGS)</span>
-                          <span className="ml-2 text-[10px] text-orange-500/70">Labor & Fuel (Auto-calc)</span>
+                   <div className="group flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-orange-900/30 hover:border-orange-800 transition-colors">
+                      <div className="flex flex-col gap-1 overflow-hidden pr-2">
+                          <span className="text-orange-300 font-medium truncate">Variable Costs (COGS)</span>
+                          <div className="flex items-center gap-2">
+                               <span className="text-[10px] uppercase font-bold text-orange-500/70 bg-orange-900/10 px-1.5 py-0.5 rounded tracking-wide border border-orange-900/20">Labor & Fuel (Auto-calc)</span>
+                          </div>
                       </div>
-                      <div className="flex gap-3">
-                          <span className="text-rose-400 font-mono">-₱{financials.variableCosts.toLocaleString()}</span>
-                          <span className="w-4"></span>
+                      <div className="flex items-center gap-3 shrink-0">
+                          <span className="text-rose-400 font-mono font-bold text-sm whitespace-nowrap">-₱{financials.variableCosts.toLocaleString()}</span>
+                          <span className="w-8"></span>
                       </div>
                   </div>
               )}
